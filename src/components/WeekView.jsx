@@ -330,16 +330,13 @@ export default function WeekView({
                         `}
                       >
                         <div>
-                          <div className="flex items-center justify-between gap-1 mb-1.5">
-                            <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${cfg.badge} truncate`}>
+                          <div className="flex items-center gap-1 mb-1.5">
+                            <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${cfg.badge} truncate`}>
                               {cfg.name}
-                            </span>
-                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-indigo-700 bg-white/90 px-1.5 py-0.5 rounded shadow-2xs">
-                              Todo el día
                             </span>
                           </div>
 
-                          <h3 className="text-xs sm:text-base font-black text-slate-900 leading-snug mt-1">
+                          <h3 className="text-sm sm:text-base font-black text-slate-900 leading-snug mt-1">
                             {event.title}
                           </h3>
 
@@ -350,17 +347,14 @@ export default function WeekView({
                           )}
                         </div>
 
-                        <div className="space-y-1.5 pt-2 border-t border-indigo-200/60 mt-auto">
-                          {event.location && (
+                        {event.location && (
+                          <div className="pt-2 border-t border-indigo-200/60 mt-auto">
                             <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 truncate">
                               <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
                               <span className="truncate">{event.location}</span>
                             </div>
-                          )}
-                          <div className="text-[9px] font-extrabold text-indigo-600/90 tracking-wider text-center py-1 bg-white/80 rounded-md shadow-2xs">
-                            📅 DÍA COMPLETO
                           </div>
-                        </div>
+                        )}
                       </div>
                     );
                   })}
