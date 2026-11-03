@@ -32,7 +32,6 @@ export function getMemberConfig(memberId, customMembers = DEFAULT_MEMBERS) {
   };
 }
 
-// Lista exclusiva con los eventos reales solicitados
 export function generateInitialEvents() {
   const events = [
     // --- Santi: Jueves 05 ---
@@ -43,6 +42,7 @@ export function generateInitialEvents() {
       startTime: '09:00',
       endTime: '10:00',
       isAllDay: false,
+      isMilestone: false,
       member: 'member-1',
       category: 'Salud',
       location: '',
@@ -56,6 +56,7 @@ export function generateInitialEvents() {
       startTime: '14:30',
       endTime: '17:30',
       isAllDay: false,
+      isMilestone: false,
       member: 'member-1',
       category: 'Salud',
       location: '',
@@ -71,6 +72,7 @@ export function generateInitialEvents() {
       startTime: '08:30',
       endTime: '09:30',
       isAllDay: false,
+      isMilestone: false,
       member: 'member-4',
       category: 'Salud',
       location: 'Consultorio Oftalmológico',
@@ -86,6 +88,7 @@ export function generateInitialEvents() {
       startTime: '10:40',
       endTime: '11:30',
       isAllDay: false,
+      isMilestone: false,
       member: 'member-1',
       category: 'Salud',
       location: 'Consultorio Médico',
@@ -101,6 +104,7 @@ export function generateInitialEvents() {
       startTime: '16:10',
       endTime: '17:00',
       isAllDay: false,
+      isMilestone: false,
       member: 'member-1',
       category: 'Salud',
       location: 'Consultorio Médico',
@@ -108,7 +112,7 @@ export function generateInitialEvents() {
       source: 'initial'
     },
 
-    // --- Familia: Sábado 21 ---
+    // --- Familia: Sábado 21 (Pinta todo el día completo) ---
     {
       id: 'event-familia-casamiento-nov21',
       title: 'Casamiento',
@@ -116,24 +120,41 @@ export function generateInitialEvents() {
       startTime: '',
       endTime: '',
       isAllDay: true,
+      isMilestone: false, // Pinta todo el día
       member: 'family',
       category: 'Familia',
-      location: '',
+      location: 'Salón de Fiestas',
       description: 'Casamiento todo el día en familia',
+      source: 'initial'
+    },
+
+    // --- Ejemplo de Hito especial: Fin de clases el 18-12 ---
+    {
+      id: 'event-hito-fin-clases',
+      title: 'Fin de clases',
+      date: '2026-12-18',
+      startTime: '',
+      endTime: '',
+      isAllDay: true,
+      isMilestone: true, // Hito para la barra superior
+      member: 'family',
+      category: 'Colegio',
+      location: '',
+      description: 'Último día de clases de los chicos',
       source: 'initial'
     }
   ];
 
   // --- Santi: Todos los martes y jueves de noviembre RUN 17:00 a 18:30 ---
   const runDates = [
-    '2026-11-03', // Martes
-    '2026-11-05', // Jueves
-    '2026-11-10', // Martes
-    '2026-11-12', // Jueves
-    '2026-11-17', // Martes
-    '2026-11-19', // Jueves
-    '2026-11-24', // Martes
-    '2026-11-26', // Jueves
+    '2026-11-03',
+    '2026-11-05',
+    '2026-11-10',
+    '2026-11-12',
+    '2026-11-17',
+    '2026-11-19',
+    '2026-11-24',
+    '2026-11-26',
   ];
 
   runDates.forEach((dateStr) => {
@@ -144,6 +165,7 @@ export function generateInitialEvents() {
       startTime: '17:00',
       endTime: '18:30',
       isAllDay: false,
+      isMilestone: false,
       member: 'member-1',
       category: 'Deportes',
       location: '',

@@ -10,9 +10,9 @@ import { generateInitialEvents, DEFAULT_MEMBERS } from './data/mockEvents';
 import { syncFromDatabase, saveToDatabase, DEFAULT_SHEET_URL } from './utils/googleSheets';
 import { addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, format } from 'date-fns';
 
-const STORAGE_KEY_EVENTS = 'family_calendar_events_v7';
-const STORAGE_KEY_URL = 'family_calendar_sheet_url_v7';
-const STORAGE_KEY_MEMBERS = 'family_calendar_members_v7';
+const STORAGE_KEY_EVENTS = 'family_calendar_events_v8';
+const STORAGE_KEY_URL = 'family_calendar_sheet_url_v8';
+const STORAGE_KEY_MEMBERS = 'family_calendar_members_v8';
 
 export default function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());

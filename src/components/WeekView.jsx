@@ -8,12 +8,12 @@ import {
   isToday 
 } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Clock, MapPin, CalendarDays, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Clock, MapPin, CalendarDays, Flag, Sparkles } from 'lucide-react';
 import { getMemberConfig, DEFAULT_MEMBERS } from '../data/mockEvents';
 
 const START_HOUR = 7;
 const END_HOUR = 23;
-const HOUR_HEIGHT = 52; // Altura optimizada para vista móvil y desktop
+const HOUR_HEIGHT = 52;
 
 export default function WeekView({ 
   selectedDate, 
@@ -25,6 +25,7 @@ export default function WeekView({
 }) {
   const scrollContainerRef = useRef(null);
   const headerScrollRef = useRef(null);
+  const milestoneScrollRef = useRef(null);
   const [weekendVisible, setWeekendVisible] = useState(false);
 
   const weekDays = useMemo(() => {
@@ -41,12 +42,13 @@ export default function WeekView({
     return list;
   }, []);
 
-  // Sincronizar scroll horizontal del header con el cuerpo
   const handleBodyScroll = (e) => {
     if (headerScrollRef.current) {
       headerScrollRef.current.scrollLeft = e.target.scrollLeft;
     }
-    // Detectar si está viendo el fin de semana
+    if (milestoneScrollRef.current) {
+      milestoneScrollRef.current.scrollLeft = e.target.scrollLeft;
+    }
     if (e.target.scrollLeft > 60) {
       setWeekendVisible(true);
     } else {
@@ -72,7 +74,6 @@ export default function WeekView({
     }
   };
 
-  // Scroll vertical inicial a las 08:00
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 1 * HOUR_HEIGHT;
@@ -104,6 +105,14 @@ export default function WeekView({
     return Math.max(30, Math.min(diff, 360));
   };
 
+  // ¿Hay algún hito registrado en esta semana?
+  const hasMilestonesThisWeek = useMemo(() => {
+    return weekDays.some(day => {
+      const dayKey = format(day, 'yyyy-MM-dd');
+      return (eventsByDay[dayKey] || []).some(e => e.isMilestone);
+    });
+  }, [weekDays, eventsByDay]);
+
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden relative">
       {/* Barra de control rápido: Lunes a Viernes / Sábado y Domingo */}
@@ -114,7 +123,6 @@ export default function WeekView({
           <span>{weekendVisible ? 'Fin de Semana (S - D)' : 'Días de Semana (L - V)'}</span>
         </div>
 
-        {/* Botón switch para saltar entre L-V y S-D en móvil */}
         <div className="flex items-center bg-white border border-slate-200 p-0.5 rounded-lg shadow-2xs">
           <button
             onClick={scrollToWeekdays}
@@ -137,17 +145,15 @@ export default function WeekView({
         className="overflow-hidden border-b border-slate-200 bg-slate-50/90 sticky top-0 z-20"
       >
         <div className="flex w-[calc(40px+((100%-40px)/5)*7)] lg:w-full">
-          {/* Columna de hora */}
           <div className="w-10 sm:w-12 shrink-0 p-2 text-center text-xs font-bold text-slate-400 border-r border-slate-200 flex items-center justify-center">
             <Clock className="w-3.5 h-3.5" />
           </div>
 
-          {/* 7 Columnas de días (cada día = exactamente 1/5 de la pantalla visible) */}
           <div className="flex-1 grid grid-cols-7">
             {weekDays.map((day, i) => {
               const isCurrentToday = isToday(day);
               const isSelected = isSameDay(day, selectedDate);
-              const isWeekendDay = i >= 5; // Sábado y Domingo
+              const isWeekendDay = i >= 5;
 
               return (
                 <button
@@ -180,31 +186,34 @@ export default function WeekView({
         </div>
       </div>
 
-      {/* Sección All-Day si existen */}
-      {weekDays.some(day => {
-        const dEvents = eventsByDay[format(day, 'yyyy-MM-dd')] || [];
-        return dEvents.some(e => e.isAllDay);
-      }) && (
-        <div className="overflow-hidden border-b border-slate-200 bg-slate-100/60 py-1">
+      {/* Franja superior exclusiva para HITOS (ej: Fin de clases 18-12, feriados, etc.) */}
+      {hasMilestonesThisWeek && (
+        <div 
+          ref={milestoneScrollRef}
+          className="overflow-hidden border-b border-amber-200/80 bg-amber-50/60 py-1"
+        >
           <div className="flex w-[calc(40px+((100%-40px)/5)*7)] lg:w-full">
-            <div className="w-10 sm:w-12 shrink-0 text-[9px] uppercase font-bold text-slate-400 text-center self-center">
-              Día
+            <div className="w-10 sm:w-12 shrink-0 text-[9px] uppercase font-bold text-amber-800 text-center self-center flex items-center justify-center gap-0.5">
+              <Flag className="w-2.5 h-2.5 text-amber-600" />
+              <span>Hito</span>
             </div>
             <div className="flex-1 grid grid-cols-7">
               {weekDays.map((day, i) => {
                 const dayKey = format(day, 'yyyy-MM-dd');
-                const allDayEvents = (eventsByDay[dayKey] || []).filter(e => e.isAllDay);
+                const milestones = (eventsByDay[dayKey] || []).filter(e => e.isMilestone);
                 return (
-                  <div key={i} className="px-0.5 sm:px-1 border-r border-slate-200 last:border-r-0 space-y-1">
-                    {allDayEvents.map(ev => {
+                  <div key={i} className="px-0.5 sm:px-1 border-r border-amber-200/50 last:border-r-0 space-y-1">
+                    {milestones.map(ev => {
                       const cfg = getMemberConfig(ev.member, members);
                       return (
                         <div
                           key={ev.id}
                           onClick={() => onEventClick(ev)}
-                          className={`truncate rounded px-1 py-0.5 text-[9px] font-bold cursor-pointer hover:opacity-90 ${cfg.color}`}
+                          className={`truncate rounded px-1.5 py-0.5 text-[9px] font-bold cursor-pointer hover:opacity-90 shadow-2xs border border-amber-300 bg-amber-100 text-amber-900 flex items-center gap-1`}
+                          title={`Hito: ${ev.title}`}
                         >
-                          {ev.title}
+                          <Sparkles className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                          <span className="truncate">{ev.title}</span>
                         </div>
                       );
                     })}
@@ -216,13 +225,13 @@ export default function WeekView({
         </div>
       )}
 
-      {/* Cuadrícula de horas y eventos con scroll horizontal sincronizado */}
+      {/* Cuadrícula de horas y eventos */}
       <div 
         ref={scrollContainerRef}
         onScroll={handleBodyScroll}
         className="flex-1 overflow-auto relative divide-y divide-slate-100"
       >
-        <div className="flex w-[calc(40px+((100%-40px)/5)*7)] lg:w-full relative">
+        <div className="flex w-[calc(40px+((100%-40px)/5)*7)] lg:w-full relative min-h-full">
           
           {/* Columna fija de horas */}
           <div className="w-10 sm:w-12 shrink-0 border-r border-slate-200 bg-slate-50/60 select-none">
@@ -237,11 +246,12 @@ export default function WeekView({
             ))}
           </div>
 
-          {/* 7 Columnas de días (5 en pantalla + 2 en scroll lateral) */}
-          <div className="flex-1 grid grid-cols-7">
+          {/* 7 Columnas de días */}
+          <div className="flex-1 grid grid-cols-7 relative">
             {weekDays.map((day, dayIndex) => {
               const dayKey = format(day, 'yyyy-MM-dd');
-              const dayEvents = (eventsByDay[dayKey] || []).filter(e => !e.isAllDay);
+              const allDayEvents = (eventsByDay[dayKey] || []).filter(e => e.isAllDay && !e.isMilestone);
+              const timedEvents = (eventsByDay[dayKey] || []).filter(e => !e.isAllDay);
               const isSelected = isSameDay(day, selectedDate);
               const isCurrentToday = isToday(day);
               const isWeekendDay = dayIndex >= 5;
@@ -252,9 +262,10 @@ export default function WeekView({
                   className={`relative border-r border-slate-200/80 last:border-r-0 transition-colors
                     ${isSelected ? 'bg-indigo-50/20' : ''}
                     ${isCurrentToday ? 'bg-indigo-50/10' : ''}
-                    ${isWeekendDay ? 'bg-slate-50/40' : ''}
+                    ${isWeekendDay ? 'bg-slate-50/30' : ''}
                   `}
                 >
+                  {/* Líneas de horas */}
                   {hours.map(hour => (
                     <div
                       key={hour}
@@ -271,8 +282,60 @@ export default function WeekView({
                     </div>
                   ))}
 
-                  {/* Eventos */}
-                  {dayEvents.map(event => {
+                  {/* EVENTO DE TODO EL DÍA: PINTA LA COLUMNA COMPLETA DE PUNTA A PUNTA */}
+                  {allDayEvents.map(event => {
+                    const cfg = getMemberConfig(event.member, members);
+                    return (
+                      <div
+                        key={event.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEventClick(event);
+                        }}
+                        className={`absolute inset-x-0.5 top-0 bottom-0 rounded-xl p-2.5 cursor-pointer border-2 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] flex flex-col justify-between z-10
+                          ${cfg.lightBg} shadow-sm border-indigo-300 bg-gradient-to-b from-indigo-50/95 via-indigo-100/70 to-indigo-50/95
+                        `}
+                      >
+                        {/* Cabecera del evento de todo el día */}
+                        <div>
+                          <div className="flex items-center justify-between gap-1 mb-1.5">
+                            <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${cfg.badge} truncate`}>
+                              {cfg.name}
+                            </span>
+                            <span className="text-[8px] font-extrabold uppercase tracking-widest text-indigo-700 bg-white/90 px-1.5 py-0.5 rounded shadow-2xs">
+                              Todo el día
+                            </span>
+                          </div>
+
+                          <h3 className="text-xs sm:text-base font-black text-slate-900 leading-snug mt-1">
+                            {event.title}
+                          </h3>
+
+                          {event.description && (
+                            <p className="text-[10px] sm:text-xs text-slate-700 mt-2 font-medium leading-relaxed bg-white/60 p-2 rounded-lg border border-indigo-100">
+                              {event.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Pie con ubicación y distintivo */}
+                        <div className="space-y-1.5 pt-2 border-t border-indigo-200/60 mt-auto">
+                          {event.location && (
+                            <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 truncate">
+                              <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+                              <span className="truncate">{event.location}</span>
+                            </div>
+                          )}
+                          <div className="text-[9px] font-extrabold text-indigo-600/90 tracking-wider text-center py-1 bg-white/80 rounded-md shadow-2xs">
+                            📅 DÍA COMPLETO
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Eventos con horario fijo */}
+                  {timedEvents.map(event => {
                     const minutesFromStart = getMinutesFromStart(event.startTime);
                     const durationMinutes = getDurationMinutes(event.startTime, event.endTime);
                     
