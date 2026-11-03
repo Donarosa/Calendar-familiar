@@ -8,6 +8,7 @@ import EventModal from './components/EventModal';
 import SheetsConfigModal from './components/SheetsConfigModal';
 import { generateInitialEvents, DEFAULT_MEMBERS } from './data/mockEvents';
 import { syncFromDatabase, saveToDatabase, DEFAULT_SHEET_URL } from './utils/googleSheets';
+import { fetchArgentinaHolidays } from './utils/holidays';
 import { addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, format } from 'date-fns';
 
 const STORAGE_KEY_EVENTS = 'family_calendar_events_v8';
@@ -66,6 +67,16 @@ export default function App() {
   const [syncStatus, setSyncStatus] = useState('idle');
   const [lastSyncTime, setLastSyncTime] = useState(null);
   const [syncError, setSyncError] = useState(null);
+
+  // Feriados Argentinos (API pública)
+  const [holidays, setHolidays] = useState({});
+
+  useEffect(() => {
+    const year = selectedDate.getFullYear();
+    fetchArgentinaHolidays(year).then(data => {
+      setHolidays(data || {});
+    });
+  }, [selectedDate.getFullYear()]);
 
   // Modales
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -192,6 +203,7 @@ export default function App() {
           onSelectDate={(newDate) => setSelectedDate(newDate)}
           events={events}
           members={members}
+          holidays={holidays}
           selectedMember={selectedMember}
           onSelectMember={setSelectedMember}
           onUpdateMemberName={handleUpdateMemberName}
@@ -210,6 +222,7 @@ export default function App() {
               }}
               events={filteredEvents}
               members={members}
+              holidays={holidays}
               onEventClick={handleEventClick}
               onSlotClick={(slot) => handleOpenNewEvent(slot)}
             />
@@ -220,6 +233,7 @@ export default function App() {
               selectedDate={selectedDate}
               events={filteredEvents}
               members={members}
+              holidays={holidays}
               onEventClick={handleEventClick}
               onAddEvent={(slot) => handleOpenNewEvent(slot)}
             />
@@ -234,6 +248,7 @@ export default function App() {
               }}
               events={filteredEvents}
               members={members}
+              holidays={holidays}
               onEventClick={handleEventClick}
               onSlotClick={(slot) => handleOpenNewEvent(slot)}
             />

@@ -7,6 +7,7 @@ export default function Sidebar({
   onSelectDate,
   events = [],
   members = [],
+  holidays = {},
   selectedMember,
   onSelectMember,
   onUpdateMemberName,
@@ -59,6 +60,8 @@ export default function Sidebar({
             if (isOpenOnMobile) onCloseMobile();
           }}
           events={events}
+          members={members}
+          holidays={holidays}
         />
 
         {/* 2. Filtro y Nombres de los 5 integrantes + Familia */}

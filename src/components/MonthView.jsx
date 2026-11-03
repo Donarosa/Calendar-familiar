@@ -19,7 +19,8 @@ export default function MonthView({
   events = [], 
   onEventClick, 
   onSlotClick,
-  members = DEFAULT_MEMBERS 
+  members = DEFAULT_MEMBERS,
+  holidays = {}
 }) {
   const monthStart = startOfMonth(selectedDate);
   const monthEnd = endOfMonth(monthStart);
@@ -52,23 +53,26 @@ export default function MonthView({
           const isCurrentMonth = isSameMonth(day, selectedDate);
           const dayEvents = getEventsForDay(day);
           const dayStr = format(day, 'yyyy-MM-dd');
+          const holiday = holidays[dayStr];
 
           return (
             <div
               key={idx}
               onClick={() => onSelectDate(day)}
               className={`p-1 sm:p-1.5 min-h-[70px] sm:min-h-[85px] flex flex-col justify-between transition-colors cursor-pointer group hover:bg-slate-50
-                ${!isCurrentMonth ? 'bg-slate-50/40 opacity-40' : 'bg-white'}
+                ${holiday ? 'bg-red-50/70 border-red-200' : !isCurrentMonth ? 'bg-slate-50/40 opacity-40' : 'bg-white'}
                 ${isSelected ? 'bg-indigo-50/20 ring-1 ring-inset ring-indigo-500' : ''}
               `}
             >
               <div className="flex items-center justify-between">
                 <span className={`text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full
-                  ${isCurrentToday 
-                    ? 'bg-indigo-600 text-white' 
-                    : isSelected 
-                      ? 'bg-slate-800 text-white' 
-                      : 'text-slate-700'
+                  ${holiday 
+                    ? 'bg-rose-500 text-white shadow-2xs' 
+                    : isCurrentToday 
+                      ? 'bg-indigo-600 text-white' 
+                      : isSelected 
+                        ? 'bg-slate-800 text-white' 
+                        : 'text-slate-700'
                   }
                 `}>
                   {format(day, 'd')}
@@ -85,6 +89,12 @@ export default function MonthView({
                   +
                 </button>
               </div>
+
+              {holiday && (
+                <div className="text-[8px] font-black uppercase text-rose-700 bg-red-100/90 px-1 py-0.2 rounded truncate my-0.5">
+                  🇦🇷 {holiday.name}
+                </div>
+              )}
 
               {/* Eventos del día */}
               <div className="flex-1 mt-0.5 space-y-0.5 overflow-hidden">

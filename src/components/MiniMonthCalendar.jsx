@@ -16,7 +16,7 @@ import {
 import { es } from 'date-fns/locale';
 import { getMemberConfig } from '../data/mockEvents';
 
-export default function MiniMonthCalendar({ selectedDate, onSelectDate, events = [], members = [] }) {
+export default function MiniMonthCalendar({ selectedDate, onSelectDate, events = [], members = [], holidays = {} }) {
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(selectedDate));
 
   const monthStart = startOfMonth(currentMonth);
@@ -88,15 +88,18 @@ export default function MiniMonthCalendar({ selectedDate, onSelectDate, events =
           const isCurrentToday = isToday(day);
           const isMonthDay = isSameMonth(day, currentMonth);
           const dayEvents = getEventsForDay(day);
+          const dayKey = format(day, 'yyyy-MM-dd');
+          const isHoliday = Boolean(holidays[dayKey]);
 
           return (
             <button
               key={idx}
               onClick={() => onSelectDate(day)}
+              title={isHoliday ? `Feriado: ${holidays[dayKey]?.name}` : undefined}
               className={`relative flex flex-col items-center justify-center h-7 rounded-lg text-xs font-medium transition-colors
-                ${!isMonthDay ? 'text-slate-300' : 'text-slate-700'}
+                ${!isMonthDay ? 'text-slate-300' : isHoliday ? 'text-rose-700 bg-red-50/80 font-bold' : 'text-slate-700'}
                 ${isSelected 
-                  ? 'bg-indigo-600 text-white font-bold' 
+                  ? 'bg-indigo-600 text-white font-bold !text-white' 
                   : isCurrentToday 
                     ? 'border border-indigo-600 text-indigo-600 font-bold bg-indigo-50/50' 
                     : 'hover:bg-slate-100'

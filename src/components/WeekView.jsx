@@ -21,7 +21,8 @@ export default function WeekView({
   events = [], 
   onEventClick, 
   onSlotClick,
-  members = DEFAULT_MEMBERS
+  members = DEFAULT_MEMBERS,
+  holidays = {}
 }) {
   const scrollContainerRef = useRef(null);
   const headerScrollRef = useRef(null);
@@ -151,34 +152,48 @@ export default function WeekView({
 
           <div className="flex-1 grid grid-cols-7">
             {weekDays.map((day, i) => {
+              const dayKey = format(day, 'yyyy-MM-dd');
               const isCurrentToday = isToday(day);
               const isSelected = isSameDay(day, selectedDate);
               const isWeekendDay = i >= 5;
+              const holiday = holidays[dayKey];
 
               return (
                 <button
                   key={i}
                   onClick={() => onSelectDate(day)}
                   className={`py-2 px-0.5 sm:px-1 text-center border-r border-slate-200 last:border-r-0 transition-colors cursor-pointer group hover:bg-slate-100/70
-                    ${isSelected ? 'bg-indigo-50/50' : ''}
-                    ${isWeekendDay ? 'bg-slate-100/50' : ''}
+                    ${holiday ? 'bg-red-50/90 text-red-900 border-r-red-200' : ''}
+                    ${isSelected && !holiday ? 'bg-indigo-50/50' : ''}
+                    ${isWeekendDay && !holiday ? 'bg-slate-100/50' : ''}
                   `}
                 >
-                  <div className={`text-[10px] font-bold uppercase ${isWeekendDay ? 'text-indigo-600' : 'text-slate-500'}`}>
+                  <div className={`text-[10px] font-bold uppercase truncate
+                    ${holiday ? 'text-red-700 font-black' : isWeekendDay ? 'text-indigo-600' : 'text-slate-500'}
+                  `}>
                     {format(day, 'EEE', { locale: es })}
                   </div>
                   <div className="flex items-center justify-center mt-0.5">
                     <span className={`w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-xs font-bold transition-transform group-hover:scale-105
-                      ${isCurrentToday 
-                        ? 'bg-indigo-600 text-white shadow-xs' 
-                        : isSelected 
-                          ? 'bg-slate-900 text-white' 
-                          : 'text-slate-700'
+                      ${holiday 
+                        ? 'bg-rose-500 text-white shadow-2xs'
+                        : isCurrentToday 
+                          ? 'bg-indigo-600 text-white shadow-xs' 
+                          : isSelected 
+                            ? 'bg-slate-900 text-white' 
+                            : 'text-slate-700'
                       }
                     `}>
                       {format(day, 'd')}
                     </span>
                   </div>
+
+                  {/* Etiqueta de feriado argentino */}
+                  {holiday && (
+                    <div className="text-[8px] font-black uppercase tracking-tight text-rose-700 bg-red-100/90 px-1 py-0.2 rounded mt-0.5 truncate max-w-full" title={`Feriado Nacional: ${holiday.name}`}>
+                      🇦🇷 {holiday.name}
+                    </div>
+                  )}
                 </button>
               );
             })}
@@ -186,7 +201,7 @@ export default function WeekView({
         </div>
       </div>
 
-      {/* Franja superior exclusiva para HITOS (ej: Fin de clases 18-12, feriados, etc.) */}
+      {/* Franja superior exclusiva para HITOS */}
       {hasMilestonesThisWeek && (
         <div 
           ref={milestoneScrollRef}
@@ -204,7 +219,6 @@ export default function WeekView({
                 return (
                   <div key={i} className="px-0.5 sm:px-1 border-r border-amber-200/50 last:border-r-0 space-y-1">
                     {milestones.map(ev => {
-                      const cfg = getMemberConfig(ev.member, members);
                       return (
                         <div
                           key={ev.id}
@@ -250,6 +264,7 @@ export default function WeekView({
           <div className="flex-1 grid grid-cols-7 relative">
             {weekDays.map((day, dayIndex) => {
               const dayKey = format(day, 'yyyy-MM-dd');
+              const holiday = holidays[dayKey];
               const allDayEvents = (eventsByDay[dayKey] || []).filter(e => e.isAllDay && !e.isMilestone);
               const timedEvents = (eventsByDay[dayKey] || []).filter(e => !e.isAllDay);
               const isSelected = isSameDay(day, selectedDate);
@@ -260,11 +275,27 @@ export default function WeekView({
                 <div
                   key={dayIndex}
                   className={`relative border-r border-slate-200/80 last:border-r-0 transition-colors
-                    ${isSelected ? 'bg-indigo-50/20' : ''}
-                    ${isCurrentToday ? 'bg-indigo-50/10' : ''}
-                    ${isWeekendDay ? 'bg-slate-50/30' : ''}
+                    ${holiday ? 'bg-red-50/65 border-r-red-200/70' : ''}
+                    ${!holiday && isSelected ? 'bg-indigo-50/20' : ''}
+                    ${!holiday && isCurrentToday ? 'bg-indigo-50/10' : ''}
+                    ${!holiday && isWeekendDay ? 'bg-slate-50/30' : ''}
                   `}
                 >
+                  {/* Marca de agua / Cinta de feriado de fondo si es feriado */}
+                  {holiday && (
+                    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 select-none z-0">
+                      <div className="text-[10px] font-extrabold uppercase tracking-widest text-red-400/50 bg-red-100/40 px-2 py-0.5 rounded text-center">
+                        Feriado Nacional
+                      </div>
+                      <div className="text-[11px] font-black text-red-500/25 text-center leading-tight">
+                        {holiday.name}
+                      </div>
+                      <div className="text-[9px] font-bold text-red-400/40 text-center">
+                        🇦🇷 No laborable
+                      </div>
+                    </div>
+                  )}
+
                   {/* Líneas de horas */}
                   {hours.map(hour => (
                     <div
@@ -274,7 +305,9 @@ export default function WeekView({
                         const timeStr = `${String(hour).padStart(2, '0')}:00`;
                         onSlotClick({ date: dayKey, time: timeStr });
                       }}
-                      className="border-b border-slate-100 hover:bg-indigo-50/30 transition-colors cursor-pointer group relative"
+                      className={`border-b transition-colors cursor-pointer group relative
+                        ${holiday ? 'border-red-100/70 hover:bg-red-100/40' : 'border-slate-100 hover:bg-indigo-50/30'}
+                      `}
                     >
                       <span className="hidden group-hover:block absolute top-0.5 right-0.5 text-[9px] text-indigo-400 font-bold">
                         +
@@ -282,7 +315,7 @@ export default function WeekView({
                     </div>
                   ))}
 
-                  {/* EVENTO DE TODO EL DÍA: PINTA LA COLUMNA COMPLETA DE PUNTA A PUNTA */}
+                  {/* EVENTO DE TODO EL DÍA: PINTA LA COLUMNA COMPLETA */}
                   {allDayEvents.map(event => {
                     const cfg = getMemberConfig(event.member, members);
                     return (
@@ -296,7 +329,6 @@ export default function WeekView({
                           ${cfg.lightBg} shadow-sm border-indigo-300 bg-gradient-to-b from-indigo-50/95 via-indigo-100/70 to-indigo-50/95
                         `}
                       >
-                        {/* Cabecera del evento de todo el día */}
                         <div>
                           <div className="flex items-center justify-between gap-1 mb-1.5">
                             <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${cfg.badge} truncate`}>
@@ -318,7 +350,6 @@ export default function WeekView({
                           )}
                         </div>
 
-                        {/* Pie con ubicación y distintivo */}
                         <div className="space-y-1.5 pt-2 border-t border-indigo-200/60 mt-auto">
                           {event.location && (
                             <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 truncate">

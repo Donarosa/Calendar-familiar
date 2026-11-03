@@ -9,11 +9,13 @@ export default function DayView({
   events = [], 
   onEventClick, 
   onAddEvent,
-  members = DEFAULT_MEMBERS 
+  members = DEFAULT_MEMBERS,
+  holidays = {} 
 }) {
   const dayKey = format(selectedDate, 'yyyy-MM-dd');
   const dayEvents = events.filter(e => e.date === dayKey);
   const isCurrentToday = isToday(selectedDate);
+  const holiday = holidays[dayKey];
 
   const sortedEvents = [...dayEvents].sort((a, b) => {
     return (a.startTime || '00:00').localeCompare(b.startTime || '00:00');
@@ -29,10 +31,12 @@ export default function DayView({
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
       {/* Cabecera del día compacta */}
-      <div className="px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-slate-50/60">
+      <div className={`px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 ${holiday ? 'bg-red-50/80 border-b-red-200' : 'bg-slate-50/60'}`}>
         <div className="flex items-center gap-2.5">
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-            {isCurrentToday ? 'Hoy' : format(selectedDate, 'EEEE', { locale: es })}
+          <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border
+            ${holiday ? 'bg-red-100 text-red-800 border-red-200 font-black' : 'text-indigo-600 bg-indigo-50 border-indigo-100'}
+          `}>
+            {holiday ? `🇦🇷 Feriado: ${holiday.name}` : isCurrentToday ? 'Hoy' : format(selectedDate, 'EEEE', { locale: es })}
           </span>
           <h2 className="text-base sm:text-lg font-black text-slate-900 capitalize">
             {format(selectedDate, "d 'de' MMMM yyyy", { locale: es })}
