@@ -1,4 +1,4 @@
-// Configuración con los 5 integrantes de la familia + Familia
+// Configuración de los 5 integrantes de la familia + Familia
 
 export const DEFAULT_MEMBERS = [
   { id: 'all', name: 'Todos', color: 'bg-slate-700 text-white', border: 'border-slate-300' },
@@ -15,12 +15,11 @@ export function getMemberConfig(memberId, customMembers = DEFAULT_MEMBERS) {
   const found = list.find(m => m.id === memberId);
   if (found) return found;
 
-  // Fallbacks por nombres directos
   const lower = String(memberId).toLowerCase();
-  if (lower.includes('santi') || lower.includes('papa') || lower.includes('esposo')) return list.find(m => m.id === 'member-1') || list[2];
-  if (lower.includes('lu') || lower.includes('mama') || lower.includes('esposa')) return list.find(m => m.id === 'member-2') || list[3];
+  if (lower.includes('santi') || lower.includes('papa')) return list.find(m => m.id === 'member-1') || list[2];
+  if (lower.includes('lu') || lower.includes('mama')) return list.find(m => m.id === 'member-2') || list[3];
   if (lower.includes('bru')) return list.find(m => m.id === 'member-3') || list[4];
-  if (lower.includes('ama')) return list.find(m => m.id === 'member-4') || list[5];
+  if (lower.includes('ama') || lower.includes('amador')) return list.find(m => m.id === 'member-4') || list[5];
   if (lower.includes('indi')) return list.find(m => m.id === 'member-5') || list[6];
   if (lower.includes('familia') || lower.includes('todos') || lower.includes('juntos')) return list.find(m => m.id === 'family') || list[1];
 
@@ -33,138 +32,125 @@ export function getMemberConfig(memberId, customMembers = DEFAULT_MEMBERS) {
   };
 }
 
+// Lista exclusiva con los eventos reales solicitados
 export function generateInitialEvents() {
-  const today = new Date();
-
-  const formatDate = (offsetDays) => {
-    const target = new Date(today);
-    target.setDate(today.getDate() + offsetDays);
-    const ty = target.getFullYear();
-    const tm = String(target.getMonth() + 1).padStart(2, '0');
-    const td = String(target.getDate()).padStart(2, '0');
-    return `${ty}-${tm}-${td}`;
-  };
-
-  return [
+  const events = [
+    // --- Santi: Jueves 05 ---
     {
-      id: 'mock-1',
-      title: 'Entrenamiento & Gym',
-      date: formatDate(0), // Hoy
-      startTime: '07:30',
-      endTime: '08:30',
+      id: 'event-santi-psicologa-nov05',
+      title: 'Psicóloga',
+      date: '2026-11-05',
+      startTime: '09:00',
+      endTime: '10:00',
       isAllDay: false,
       member: 'member-1',
       category: 'Salud',
-      location: 'SportClub',
-      source: 'local'
+      location: '',
+      description: 'Sesión con Psicóloga',
+      source: 'initial'
     },
     {
-      id: 'mock-2',
-      title: 'Desayuno y organización semanal',
-      date: formatDate(0),
-      startTime: '08:45',
+      id: 'event-santi-cardio-nov05',
+      title: 'Cardio',
+      date: '2026-11-05',
+      startTime: '14:30',
+      endTime: '17:30',
+      isAllDay: false,
+      member: 'member-1',
+      category: 'Salud',
+      location: '',
+      description: 'Estudio / Entrenamiento de Cardio',
+      source: 'initial'
+    },
+
+    // --- Amador (Ama): Viernes 06 ---
+    {
+      id: 'event-ama-oculista-nov06',
+      title: 'Oculista Amador',
+      date: '2026-11-06',
+      startTime: '08:30',
       endTime: '09:30',
       isAllDay: false,
+      member: 'member-4',
+      category: 'Salud',
+      location: 'Consultorio Oftalmológico',
+      description: 'Consulta con oculista para Amador',
+      source: 'initial'
+    },
+
+    // --- Santi: Miércoles 18 ---
+    {
+      id: 'event-santi-proctologo-nov18',
+      title: 'Proctólogo',
+      date: '2026-11-18',
+      startTime: '10:40',
+      endTime: '11:30',
+      isAllDay: false,
+      member: 'member-1',
+      category: 'Salud',
+      location: 'Consultorio Médico',
+      description: 'Turno médico proctólogo',
+      source: 'initial'
+    },
+
+    // --- Santi: Jueves 19 ---
+    {
+      id: 'event-santi-traumatologo-nov19',
+      title: 'Traumatólogo',
+      date: '2026-11-19',
+      startTime: '16:10',
+      endTime: '17:00',
+      isAllDay: false,
+      member: 'member-1',
+      category: 'Salud',
+      location: 'Consultorio Médico',
+      description: 'Consulta con traumatólogo',
+      source: 'initial'
+    },
+
+    // --- Familia: Sábado 21 ---
+    {
+      id: 'event-familia-casamiento-nov21',
+      title: 'Casamiento',
+      date: '2026-11-21',
+      startTime: '',
+      endTime: '',
+      isAllDay: true,
       member: 'family',
       category: 'Familia',
-      location: 'Casa',
-      source: 'local'
-    },
-    {
-      id: 'mock-3',
-      title: 'Fútbol / Deporte Bru',
-      date: formatDate(0),
+      location: '',
+      description: 'Casamiento todo el día en familia',
+      source: 'initial'
+    }
+  ];
+
+  // --- Santi: Todos los martes y jueves de noviembre RUN 17:00 a 18:30 ---
+  const runDates = [
+    '2026-11-03', // Martes
+    '2026-11-05', // Jueves
+    '2026-11-10', // Martes
+    '2026-11-12', // Jueves
+    '2026-11-17', // Martes
+    '2026-11-19', // Jueves
+    '2026-11-24', // Martes
+    '2026-11-26', // Jueves
+  ];
+
+  runDates.forEach((dateStr) => {
+    events.push({
+      id: `event-santi-run-${dateStr}`,
+      title: 'RUN',
+      date: dateStr,
       startTime: '17:00',
-      endTime: '18:15',
-      isAllDay: false,
-      member: 'member-3',
-      category: 'Deportes',
-      location: 'Club',
-      source: 'local'
-    },
-    {
-      id: 'mock-4',
-      title: 'Pilates / Yoga Lu',
-      date: formatDate(1), // Mañana
-      startTime: '08:00',
-      endTime: '09:15',
-      isAllDay: false,
-      member: 'member-2',
-      category: 'Salud',
-      location: 'Estudio Mandala',
-      source: 'local'
-    },
-    {
-      id: 'mock-5',
-      title: 'Actividad / Danza Ama',
-      date: formatDate(1),
-      startTime: '16:00',
-      endTime: '17:15',
-      isAllDay: false,
-      member: 'member-4',
-      category: 'Actividades',
-      location: 'Academia',
-      source: 'local'
-    },
-    {
-      id: 'mock-6',
-      title: 'Control pediatra Indi',
-      date: formatDate(2),
-      startTime: '10:00',
-      endTime: '11:00',
-      isAllDay: false,
-      member: 'member-5',
-      category: 'Médico',
-      location: 'Consultorio pediátrico',
-      source: 'local'
-    },
-    {
-      id: 'mock-7',
-      title: 'Cena juntos Santi & Lu',
-      date: formatDate(3),
-      startTime: '20:30',
-      endTime: '22:30',
-      isAllDay: false,
-      member: 'family',
-      category: 'Pareja',
-      location: 'Restaurante',
-      source: 'local'
-    },
-    {
-      id: 'mock-8',
-      title: 'Partido de pádel Santi',
-      date: formatDate(4),
-      startTime: '19:00',
-      endTime: '20:30',
+      endTime: '18:30',
       isAllDay: false,
       member: 'member-1',
       category: 'Deportes',
-      location: 'Canchas del Parque',
-      source: 'local'
-    },
-    {
-      id: 'mock-9',
-      title: 'Cumpleaños infantil Bru & Ama',
-      date: formatDate(5),
-      startTime: '16:00',
-      endTime: '19:00',
-      isAllDay: false,
-      member: 'family',
-      category: 'Social',
-      location: 'Salón de Fiestas',
-      source: 'local'
-    },
-    {
-      id: 'mock-10',
-      title: 'Almuerzo domingo en familia',
-      date: formatDate(6),
-      startTime: '13:00',
-      endTime: '16:00',
-      isAllDay: false,
-      member: 'family',
-      category: 'Familia',
-      location: 'Casa abuelos',
-      source: 'local'
-    }
-  ];
+      location: '',
+      description: 'Entrenamiento de running',
+      source: 'initial'
+    });
+  });
+
+  return events;
 }
