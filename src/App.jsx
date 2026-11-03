@@ -6,6 +6,7 @@ import DayView from './components/DayView';
 import MonthView from './components/MonthView';
 import EventModal from './components/EventModal';
 import SheetsConfigModal from './components/SheetsConfigModal';
+import AuthScreen from './components/AuthScreen';
 import { generateInitialEvents, DEFAULT_MEMBERS } from './data/mockEvents';
 import { syncFromDatabase, saveToDatabase, DEFAULT_SHEET_URL } from './utils/googleSheets';
 import { fetchArgentinaHolidays } from './utils/holidays';
@@ -14,8 +15,23 @@ import { addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, format } fr
 const STORAGE_KEY_EVENTS = 'family_calendar_events_v8';
 const STORAGE_KEY_URL = 'family_calendar_sheet_url_v8';
 const STORAGE_KEY_MEMBERS = 'family_calendar_members_v8';
+const STORAGE_KEY_AUTH = 'family_calendar_auth_v1';
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem(STORAGE_KEY_AUTH) === 'authenticated';
+  });
+
+  const handleAuthenticate = () => {
+    localStorage.setItem(STORAGE_KEY_AUTH, 'authenticated');
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(STORAGE_KEY_AUTH);
+    setIsAuthenticated(false);
+  };
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeView, setActiveView] = useState('week'); // 'week' | 'day' | 'month'
   const [selectedMember, setSelectedMember] = useState('all');
@@ -178,6 +194,11 @@ export default function App() {
     setIsEventModalOpen(true);
   };
 
+  // Si no está autenticado en este dispositivo, mostrar pantalla de contraseña
+  if (!isAuthenticated) {
+    return <AuthScreen onAuthenticate={handleAuthenticate} />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 text-slate-800 antialiased">
       {/* 1. Header ultra compacto y responsive */}
@@ -193,6 +214,7 @@ export default function App() {
         syncStatus={syncStatus}
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+        onLogout={handleLogout}
       />
 
       {/* 2. Área principal: Sidebar + Calendario */}

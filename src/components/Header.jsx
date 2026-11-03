@@ -9,7 +9,8 @@ import {
   FileSpreadsheet, 
   CalendarDays,
   Menu,
-  X
+  X,
+  Lock
 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -25,7 +26,8 @@ export default function Header({
   onOpenSheetsModal,
   syncStatus,
   isSidebarOpen,
-  onToggleSidebar
+  onToggleSidebar,
+  onLogout
 }) {
   const getPeriodLabel = () => {
     if (activeView === 'day') {
@@ -154,6 +156,17 @@ export default function Header({
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Nuevo</span>
         </button>
+
+        {/* Bloquear / Cerrar sesión */}
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+            title="Bloquear acceso en este dispositivo"
+          >
+            <Lock className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </header>
   );
